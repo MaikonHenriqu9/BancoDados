@@ -1,104 +1,119 @@
-create database db_livraria;
-use db_livraria;
+create database DB_CDS;
+USE DB_CDS;
 
-create table tb_livro(
-	PK_ID_livro int not null primary key auto_increment,
-    nome_livro varchar (100),
-    genero_livro enum ('romance', 'misterio', 'aventura', 'suspense','comedia','ficcao','policial','biografia'),
-    data_publi date,
-    capa_livro enum ('roller', 'mole','cartao','parana'),
-    valor_livro decimal (10.2),
-    rating enum ('otimo','bom', 'regular','ruim','pessimo')
+-- tabela artista
+create table tb_artista (
+ pk_Cod_artista int primary key not null auto_increment,
+ nome_artista varchar (100) not null unique key
 );
 
-describe tb_livro;
-select * from tb_livro; 
-
-insert into tb_livro
-(nome_livro,genero_livro,data_publi,capa_livro,valor_livro,rating) value
-('1q84','ficcao','2009-08-02','mole',50.00,'otimo'),
-('perdida','romance','2011-08-26','roller',49.00,'regular'),
-('garota exemplar','suspense','2011-10-11','roller',69.00,'otimo'),
-('Operação cavalo de troia','ficcao','1960-10-09','mole',79.00,'otimo'); 
-
-select * from tb_livro;
-select nome_livro, genero_livro from tb_livro;
-select nome_livro, genero_livro from tb_livro 
-where rating = 'otimo' and valor_livro < 80.00;
-
-create table tb_autor(
-	pk_id_autor int not null auto_increment,
-	nome_autor varchar (100),
-	endereco_autor varchar (50),
-	pais_origem varchar (50),
-    constraint pk_id_autor primary key (pk_id_autor)
+-- tabela gravadora
+create table tb_gravadora(
+	pk_cod_gravadora int primary key not null auto_increment,
+    nome_gravadora varchar (50) unique key not null
 );
 
-describe tb_autor;
-select * from tb_autor;
-
-insert into tb_autor
-(nome_autor, endereco_autor, pais_origem) value
-('haruk murakami', 'sao paulo', 'Brasil'),
-('Carina Rissi', 'Rio de Janeiro', 'Brasil'),
-('Gillian Flynn', 'Pernambuco', 'Brasil'),
-('jj benitez', 'Santa Catarina', 'Brasil');
-
-create table tb_editora(
-pk_id_editora int primary key not null auto_increment,
-nome_editora varchar(20),
-telefone_editora varchar(20),
-endereco_editora varchar(50)
+-- tabela categoria
+create table tb_categoria(
+	pk_cod_categoria int primary key not null auto_increment,
+	nome_categoria varchar (50) unique key not null
 );
 
-describe tb_editora;
-select*from tb_editora;
+-- tabela estado
+create table tb_estado(
+	pk_Sigla_Estado char(2) primary key not null,
+    nome_estado char(50) not null unique
+);
 
-insert into tb_editora (nome_editora,telefone_editora,endereco_editora) value
-('saraiva','(11)91111-1111','Rua Lapa Tito, 54'),
-('verus editora','(11)92222-2222','Rua Lapa Tito, 1'),
-('intrinseca','(21)93333-3333','Rua Maikon, 10');
+-- tabela cidade
+create table tb_cidade(
+	pk_cod_cidade int primary key not null auto_increment,
+    fk_sigla_estado char(2) not null,
+    nome_cidade varchar (100) not null unique key,
+    
+    foreign key(fk_sigla_estado) references tb_estado(pk_Sigla_Estado) -- chave primária da tabela estado
+);
 
-select*from tb_editora;
+-- tabela cliente
+create table tb_cliente(
+	pk_cod_cliente int not null primary key auto_increment,
+    fk_cod_cidade int not null,
+    nome_cliente varchar(100) not null,
+    endereco_cliente varchar(200) not null,
+    renda_cliente decimal(10,2) not null default 0 CHECK (renda_cliente >= 0),
+    sexo_cliente char(1) not null default 'F' CHECK (sexo_cliente = 'M' OR sexo_cliente = 'F'),
 
-describe tb_livro;
+	foreign key(fk_cod_cidade) references tb_cidade(pk_cod_cidade) -- chave primária da tabela cidade
+);
 
-alter table tb_livro add column fk_id_autor int;
+-- tabela conjuge
+create table tb_conjuge(
+	fk_cod_cliente int not null,
+    nome_conjuge varchar(100) not null,
+    renda_conjuge decimal(10,2) not null default 0 CHECK (renda_conjuge >= 0),
+    sexo_conjuge char(1) not null default 'M' CHECK (sexo_conjuge = 'F' OR sexo_conjuge = 'M'),
+    
+    foreign key (fk_cod_cliente) references tb_cliente(pk_cod_cliente) -- chave primária da tabela cliente
+);
 
-alter table tb_livro 
-add constraint fk_id_autor 
-foreign key (fk_id_autor)
-references tb_autor(pk_id_autor);
+-- tabela funcionário
+create table tb_funcionario(
+	pk_cod_funcionario int not null primary key auto_increment,
+    nome_funcionario varchar(100) not null,
+    endereco_funcionario varchar(200) not null,
+    salario_funcionario decimal(10,2) not null default 0 CHECK (salario_funcionario >= 0),
+    sexo_funcionario char(1) not null default 'M' CHECK (sexo_funcionario = 'M' OR sexo_funcionario = 'F')
+);
 
-/* Add chave estrangeira editora */
-alter table tb_livro add column fk_id_editora int;
+-- tabela dependente
+create table tb_dependente(
+	pk_cod_dependente int not null primary key auto_increment,
+    fk_cod_funcionario int not null,
+    nome_dependente varchar(100) not null,
+    sexo_dependente char(1) not null default 'M' CHECK (sexo_dependente = 'M' OR sexo_dependente = 'F'),
+    
+    foreign key(fk_cod_funcionario) references tb_funcionario(pk_cod_funcionario) -- chave primária da tabela funcionario
+);
 
-/* Add fazendo a ligação */
-alter table tb_livro
-add constraint fk_id_editora
-foreign key (fk_id_editora) references tb_editora(pk_id_editora);
+-- tabela titulo
+create table tb_titulo(
+	pk_cod_titulo int not null primary key auto_increment,
+    cod_categoria int not null,
+    cod_gravadora int not null,
+    nome_cd varchar(100) unique,
+    valor_cd decimal(10,2) not null CHECK(valor_cd > 0),
+    quantidade_estoque int not null CHECK (quantidade_estoque >= 0)
+);
 
-select*from tb_livro
-where nome_livro like '%p%';
+-- tabela pedido
+create table tb_pedido(
+	pk_num_pedido int not null primary key auto_increment,
+    cod_cliente int not null,
+    cod_funcionario int not null,
+    data_pedido datetime not null,
+    valor_pedido decimal(10,2) not null default 0 CHECK (valor_pedido >= 0),
+    
+    foreign key(cod_cliente) references tb_titulo(pk_cod_titulo) -- chave primária da tabela titulo
+);
 
-select * from tb_livro;
+-- tabela titulo pedido
+create table tb_tituloPedido(
+	fk_num_pedido int not null,
+    fk_cod_titulo int not null,
+    quantidade_cd int not null CHECK (quantidade_cd >= 1),
+    valor_cd decimal(10,2) not null CHECK (valor_cd > 0),
+    
+    primary key(fk_num_pedido, fk_cod_titulo),
+    foreign key(fk_num_pedido) references tb_pedido(pk_num_pedido), -- chave primária da tabela pedido
+    foreign key(fk_cod_titulo) references tb_titulo(pk_cod_titulo) -- chave primária da tabela titulo
+);
 
-update tb_livro 
-set capa_livro = 'parana' 
-where pk_id_livro = 4;
-
-update tb_livro set capa_livro = 'parana', valor_livro = 100
-where genero_livro = 'ficcao';
-
-select * from tb_autor;
-
-update tb_livro set fk_id_autor = 4
-where nome_livro = 'Operação cavalo de troia';
-
-select tb_livro.nome_livro, tb_livro.valor_livro, tb_autor.nome_autor 
-from tb_livro join tb_autor
-on tb_autor.pk_id_autor = tb_livro.fk_id_autor; 
-
-select tb_livro.nome_livro, tb_livro.valor_livro, tb_editora.nome_editora
-from tb_livro join tb_editora
-on tb_editora.pk_id_editora = tb_livro.fk_id_editora;
+-- tabela titulo artista
+create table tb_tituloArtista(
+	cod_titulo int not null,
+    cod_artista int not null,
+    
+    primary key(cod_titulo, cod_artista),
+    foreign key(cod_titulo) references tb_titulo(pk_cod_titulo), -- chave primária da tabela titulo
+    foreign key(cod_artista) references tb_artista(pk_Cod_artista) -- chave primária da tabela artista
+);
