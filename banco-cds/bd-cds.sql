@@ -108,6 +108,7 @@ create table tb_tituloPedido(
     foreign key(fk_cod_titulo) references tb_titulo(pk_cod_titulo) -- chave primária da tabela titulo
 );
 
+
 -- tabela titulo artista
 create table tb_tituloArtista(
 	cod_titulo int not null,
@@ -117,3 +118,5 @@ create table tb_tituloArtista(
     foreign key(cod_titulo) references tb_titulo(pk_cod_titulo), -- chave primária da tabela titulo
     foreign key(cod_artista) references tb_artista(pk_Cod_artista) -- chave primária da tabela artista
 );
+
+desc tb_tituloArtista;
